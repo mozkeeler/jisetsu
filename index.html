@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Jisetsu: Self-Folding Messages</title>
+  <script type="application/javascript;version=1.7" src="jisetsu.js"></script>
+</head>
+<body>
+  <div><textarea id="input" rows="4" cols="48"></textarea></div>
+  <div><textarea id="output" rows="4" cols="48"></textarea></div>
+  <div><button onclick="doButtonClick()">Go</button></div>
+  <script type="application/javascript;version=1.7">
+    "use strict;"
+
+    function arrayBuffer2Hex(arrayBuffer) {
+      let bytes = new Uint8Array(arrayBuffer);
+      let output = "";
+      for (let i = 0; i < bytes.byteLength; i++) {
+        let b = bytes[i].toString(16);
+        if (b.length == 1) {
+          b = "0" + b;
+        }
+        output += b;
+      }
+      return output;
+    }
+
+    function string2ArrayBuffer(input) {
+      let buffer = new ArrayBuffer(input.length * 2); // 2 bytes each
+      let bufferView = new Uint16Array(buffer);
+      for (let i = 0; i < input.length; i++) {
+        bufferView[i] = input.charCodeAt(i);
+      }
+      return buffer;
+    }
+
+    function generateAESKey(alg) {
+      return crypto.subtle.generateKey(alg, true, ["encrypt"]);
+    }
+
+    function exportKey(key) {
+      return crypto.subtle.exportKey("raw", key);
+    }
+
+    function digest(input) {
+      return crypto.subtle.digest("SHA-256", string2ArrayBuffer(input));
+    }
+
+    function error(e) {
+      document.getElementById("output").value = "Error: " + e;
+    }
+
+    function doButtonClick() {
+      let output = document.getElementById("output");
+      output.value = "running...";
+      /*
+      let alg = { name: "AES-GCM", length: 256 };
+      generateAESKey(alg).then(exportKey, error).then(
+        function(bytes) {
+          let output = document.getElementById("output");
+          output.value = arrayBuffer2Hex(bytes);
+        }, error
+      );
+      */
+      let input = document.getElementById("input");
+      digest(input.value).then(function(hash) {
+        let output = document.getElementById("output");
+        output.value = arrayBuffer2Hex(hash);
+      }, error);
+    }
+  </script>
+</body>
