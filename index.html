@@ -4,13 +4,33 @@
   <meta charset="utf-8"/>
   <title>Jisetsu: Self-Folding Messages</title>
   <script type="application/javascript;version=1.7" src="jisetsu.js"></script>
+  <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 <body>
   <div><textarea id="input" rows="4" cols="48"></textarea></div>
   <div><textarea id="output" rows="4" cols="48"></textarea></div>
   <div><button onclick="doButtonClick()">Go</button></div>
+  <div id="colors"></div>
   <script type="application/javascript;version=1.7">
     "use strict;"
+
+    function setColorsForHash(hash) {
+      let container = document.getElementById("colors");
+      while (container.firstChild) {
+        container.removeChild(container.firstChild);
+      }
+      while (hash) {
+        let hex = hash.slice(0, 6);
+        while (!hex || hex.length < 6) {
+          hex = hex + "0";
+        }
+        hash = hash.slice(6, hash.length);
+        let color = document.createElement("div");
+        color.setAttribute("class", "hashcolor");
+        color.style.background = "#" + hex;
+        container.appendChild(color);
+      }
+    }
 
     function arrayBuffer2Hex(arrayBuffer) {
       let bytes = new Uint8Array(arrayBuffer);
@@ -66,6 +86,7 @@
       digest(input.value).then(function(hash) {
         let output = document.getElementById("output");
         output.value = arrayBuffer2Hex(hash);
+        setColorsForHash(output.value);
       }, error);
     }
   </script>
